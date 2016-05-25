@@ -10,13 +10,16 @@ var passport = require('passport');
 var flash = require('connect-flash')
 var expressSession = require('express-session');
 var events = require('events');
+var server = require('http').createServer(app);
 //socket.io
 var scraper = require("./scraper");
-var io = require('socket.io');
+var io = require('socket.io')(server);
+scraper.interval(500);
 
 io.on('connection',function(socket){
-  scraper.on('update',function(object){
-    console.log(object);
+  console.log('connected');
+  scraper.emitter.on('update',function(object){
+    io.emit('update',object);
   });
 });
 
@@ -41,5 +44,5 @@ app.get('*', function(req, res) {
         'route': 'Sorry this page does not exist!'
     });
 });
-app.listen(port);
+server.listen(port);
 console.log("server running on port "+port)
